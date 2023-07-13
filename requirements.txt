@@ -1,0 +1,11 @@
+matplotlib==3.7.1
+mplcursors==0.5.2
+numpy==1.24.3
+open3d==0.13.0
+opencv_python==4.7.0.72
+plyfile==1.0
+pyransac3d==0.6.0
+PyYAML==6.0
+scikit_learn==1.2.2
+scipy==1.11.1
+segment_anything==1.0
