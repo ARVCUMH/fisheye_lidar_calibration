@@ -23,7 +23,7 @@ show_lidar_plane: False  # Show lidar detected plane
 
 # Image segmentation plane and corner extraction parameters
 corner_detection_mode: "automatic"  # "automatic" or "manual". If "manual", you need to zoom in once and click corners manually.
-selection_mode: "points"  # "box" or "points".
+selection_mode: "box"  # "box" or "points".
 model_path: "sam_vit_h_4b8939.pth"  # Path to the model
 model_type: "vit_h"  # Model type: "vit_h", "vit_l" or "vit_b"
 device: "cpu"  # "cpu" or "cuda". Check Pytorch version for compatibility
