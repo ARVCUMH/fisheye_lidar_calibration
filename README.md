@@ -132,6 +132,10 @@ For demo: 0.028
 Default: 360 (0.25º rotation)
 - `show_lidar_plane`: Show lidar detected plane.
 
+<p align="center">
+  <img src="assets/plane_gif.gif" width="50%"/>
+</p>
+
 #### Image parameters
 
 - `corner_detection_mode`: "automatic" or "manual". If "manual", you need to zoom in once and click corners manually.
