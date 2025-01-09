@@ -17,7 +17,14 @@ def load_pc(path):
         return np.asarray(p.points, dtype=np.float32)
     if extension == ".ply":
         p = PlyData.read(path)
-        return np.asarray((p.elements[0].data['x'], p.elements[0].data['y'], p.elements[0].data['z'], p.elements[0].data['reflectivity'])).T
+        fields = p.elements[0].data.dtype.names
+        pointcloud = []
+        for field in fields:
+            # get the index of field
+            idx = p.elements[0].data.dtype.names.index(field)
+            if idx < 4:  # x, y and z fields
+                pointcloud.append(p.elements[0].data[field])
+        return np.asarray(pointcloud).T
 
 
 def scale_to_255(a, mn, mx, dtype=np.uint8):
@@ -69,7 +76,8 @@ class PointCloud:
             self.reflectivity = None
             self.original_reflectivity = None
         self.transform_matrix = np.identity(4)
-        self.transform_matrix[2, 3] = -0.03618  # OUSTER TRANSFORM CORRECTION
+        if params.simulated == False:
+            self.transform_matrix[2, 3] = -0.03618  # OUSTER TRANSFORM CORRECTION
 
     def __len__(self):
         return self.lidar3d.shape[0]
@@ -116,6 +124,7 @@ class PointCloud:
         # r = [np.deg2rad(1.82945084) , np.deg2rad(-3.55761875), np.deg2rad(-1.2380633)]
         # r = [np.deg2rad(1.38220545) , np.deg2rad(- 2.24528872), np.deg2rad(- 0.98003899)]
         # r = [np.deg2rad(0.53921952) , np.deg2rad(-2.78353781), np.deg2rad(0.54010021)]
+
         r = [np.deg2rad(r[0]), np.deg2rad(r[1]), np.deg2rad(r[2])]
         Rx = np.array([[1, 0, 0, 0],
                        [0, np.cos(r[0]), -np.sin(r[0]), 0],
@@ -199,16 +208,16 @@ class PointCloud:
 
         return np.array([x2d, y2d]).T
 
-    def get_spherical_coord(self, lidar2camera=1):
+    def get_spherical_coord(self, lidar2camera=True):
         """ Get coordinates from 3D LiDAR points onto the unit sphere.
             :param: lidar2camera: flag to transform LiDAR points to camera reference system.
         """
 
-        if lidar2camera == 1:
+        if lidar2camera == True:
             # Transform to camera 3D coordinates
             self.transform_lidar_to_camera()
 
-        self.distance_filter()
+        # self.distance_filter()
 
         x_lidar = self.lidar3d[:, 0]
         y_lidar = self.lidar3d[:, 1]
@@ -303,9 +312,10 @@ class Visualizer(PointCloud):
         self.encode_values(d_range=d_range)
 
         if fisheye == 0:
-            # GET LIDAR PROJECTED ONTO SPHERICAL PROJECTION FROM FISHEYE IMAGE
-            lidar_proj = Image(image=self.image, cam_model=cam_model, points_values=self.pixel_values)
-            lidar_proj.fish2equirect()
+            # GET LIDAR PROJECTED ONTO SPHERICAL PROJECTION
+            lidar_proj = Image(image=self.image, cam_model=cam_model, spherical_image=params.spherical, points_values=self.pixel_values)
+            if params.spherical == False:
+                lidar_proj.fish2equirect()
             lidar_proj.sphere_coord = self.spherical_coord
             lidar_proj.lidar_projection(pixel_points=0)
             plt.imshow(lidar_proj.eqr_image)
@@ -321,21 +331,22 @@ class Visualizer(PointCloud):
                 lcorners.get_spherical_coord()
                 lidar_proj.sphere_coord = lcorners.spherical_coord
                 lidar_proj.lidar_projection(pixel_points=0)
-                plt.scatter(x=lidar_proj.eqr_coord[0], y=lidar_proj.eqr_coord[1], c='r', s=0.5)
-                # plt.plot([lidar_proj.eqr_coord[0, 0], lidar_proj.eqr_coord[0, 2], lidar_proj.eqr_coord[0, 3], lidar_proj.eqr_coord[0, 1], lidar_proj.eqr_coord[0, 0]],
-                #          [lidar_proj.eqr_coord[1, 0], lidar_proj.eqr_coord[1, 2], lidar_proj.eqr_coord[1, 3], lidar_proj.eqr_coord[1, 1], lidar_proj.eqr_coord[1, 0]],
-                #          'r', linewidth=1)
+                plt.scatter(x=lidar_proj.eqr_coord[0], y=lidar_proj.eqr_coord[1], c='k', s=5)
+                plt.plot([lidar_proj.eqr_coord[0, 0], lidar_proj.eqr_coord[0, 2], lidar_proj.eqr_coord[0, 3], lidar_proj.eqr_coord[0, 1], lidar_proj.eqr_coord[0, 0]],
+                         [lidar_proj.eqr_coord[1, 0], lidar_proj.eqr_coord[1, 2], lidar_proj.eqr_coord[1, 3], lidar_proj.eqr_coord[1, 1], lidar_proj.eqr_coord[1, 0]],
+                         'r', linewidth=1)
             if self.camera_corners is not None:
                 ccorners = PointCloud(self.camera_corners, self.image)
-                ccorners.get_spherical_coord(0)
+                ccorners.get_spherical_coord()
                 lidar_proj.sphere_coord = ccorners.spherical_coord
                 lidar_proj.lidar_projection(pixel_points=0)
-                plt.scatter(x=lidar_proj.eqr_coord[0], y=lidar_proj.eqr_coord[1], c='g', s=0.5)
+                plt.scatter(x=lidar_proj.eqr_coord[0], y=lidar_proj.eqr_coord[1], c='g', s=5)
                 # plt.plot([lidar_proj.eqr_coord[0, 0], lidar_proj.eqr_coord[0, 2], lidar_proj.eqr_coord[0, 3], lidar_proj.eqr_coord[0, 1], lidar_proj.eqr_coord[0, 0]],
                 #          [lidar_proj.eqr_coord[1, 0], lidar_proj.eqr_coord[1, 2], lidar_proj.eqr_coord[1, 3], lidar_proj.eqr_coord[1, 1], lidar_proj.eqr_coord[1, 0]],
                 #          'g', linewidth=1)
 
         else:
+            assert params.spherical == False, "The image must be a fisheye image. Check spherical parameter in config.yaml file."
             lidar_fish = Image(image=self.image, cam_model=cam_model, points_values=self.pixel_values)
             lidar_fish.sphere_coord = self.spherical_coord
             lidar_fish.change2camera_ref_system()
@@ -357,8 +368,8 @@ class Visualizer(PointCloud):
                 lidar_fish.sphere2fisheye()
                 lidar_fish.check_image_limits()
                 u, v =  lidar_fish.spherical_proj[1], lidar_fish.spherical_proj[0]
-                plt.scatter(x=u, y=v, c='r', s=0.5)
-                # plt.plot([u[0], u[2], u[3], u[1], u[0]], [v[0], v[2], v[3], v[1], v[0]], 'r', linewidth=1)
+                plt.scatter(x=u, y=v, c='r', s=5)
+                plt.plot([u[0], u[2], u[3], u[1], u[0]], [v[0], v[2], v[3], v[1], v[0]], 'k', linewidth=1)
             if self.camera_corners is not None:
                 ccorners = PointCloud(self.camera_corners, self.image)
                 ccorners.get_spherical_coord(0)
@@ -367,7 +378,7 @@ class Visualizer(PointCloud):
                 lidar_fish.sphere2fisheye()
                 lidar_fish.check_image_limits()
                 u, v =  lidar_fish.spherical_proj[1], lidar_fish.spherical_proj[0]
-                plt.scatter(x=u, y=v, c='g', s=0.5)
+                plt.scatter(x=u, y=v, c='g', s=5)
                 # plt.plot([u[0], u[2], u[3], u[1], u[0]], [v[0], v[2], v[3], v[1], v[0]], 'g', linewidth=1)
 
         if saveto is not None:

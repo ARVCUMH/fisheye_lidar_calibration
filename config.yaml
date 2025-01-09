@@ -1,14 +1,17 @@
 # Description: Configuration file for the experiment
 
 # Experiment data
-images_path: "demo/images"
-pointclouds_path: "demo/pointclouds"
+images_path: "demo/images_frontal"  #"demo/images"
+spherical: False # True if you are using spherical images, False if you are using fisheye images
+pointclouds_path: "demo/pointclouds_frontal"  #"demo/pointclouds"
 
 # Calibration data
-calibration_file: "demo/calib_results.txt"
+calibration_file: "demo/calib_results_frontal.txt"
 
 # Modify the list of planes if you used more or less planes
 planes_sizes: [[1.89, 1.706], [0.594, 0.412]]  # Width and height of planes in meters
+# Only for simulated = True
+planes_colours: [[0, 155, 155], [148, 0, 148]]  # Colours of the planes in rgb format
 
 # Experiment parameters:
 lidar_vertical_resolution: 0.3515625  # Vertical resolution of the LiDAR in degrees
@@ -16,30 +19,38 @@ lidar_horizontal_resolution: 0.3515625  # Horizontal resolution of the LiDAR in 
 show_lidar_onto_image: 0  # 0: no, 1: on equirectangular image, 2: on fisheye image
 
 # LiDAR detection plane and corner extraction parameters
-reflectivity_threshold: 0.21  # Reflectance threshold for filtering points. Between 0 and 1. 0 for no filtering.
-radius_kdtree: 0.028  # Radius for kdtree search. Distance for finding new neighbors in plane points.
-rotations: 360  # Number of different equal plane rotations in degrees between 0º and 90º to minimize plane area. Default 360
+reflectivity_threshold: 0.15  # Reflectance threshold for filtering points. Between 0 and 1. 0 for no filtering.
+radius_kdtree: [0.06, 0.022]  # Radius for kdtree search. Distance for finding new neighbors in plane points in meters.
+rotations: 720  # Number of different equal plane rotations in degrees between 0º and 90º to minimize plane area. Default 360
 show_lidar_plane: False  # Show lidar detected plane
 
 # Image segmentation plane and corner extraction parameters
-corner_detection_mode: "automatic"  # "automatic" or "manual". If "manual", you need to zoom in once and click corners manually.
+simulated: False  # True if you are using simulated images, False if you are using real images
+corner_detection_mode: "automatic"  # "automatic", "manual" or "simulated" for simulation enviroment. If "manual", you need to zoom in once and click corners manually.
 selection_mode: "box"  # "box" or "points".
 model_path: "sam_vit_h_4b8939.pth"  # Path to the model
 model_type: "vit_h"  # Model type: "vit_h", "vit_l" or "vit_b"
 device: "cpu"  # "cpu" or "cuda". Check Pytorch version for compatibility
 
 dilation: True  # Morphological dilation 
-kernel_size: 4  # Kernel size for morphological dilation
-contour_distance_threshold: 0.85  # Threshold for filtering the closest contours points to the mask centroid. Between 0 and 1. 
+kernel_size: 6  # Kernel size for morphological dilation
+contour_distance_threshold: 0.78  # Threshold for filtering the closest contours points to the mask centroid. Between 0 and 1. 
 # For a very turned plane or close to the image boundaries, it is recommended to decrease the threshold to avoid losing corners.
-ransac_iterations: 120000  # Number of RANSAC iterations for selecting corners which optimizes the distance between them
+ransac_iterations: 5000  # Number of RANSAC iterations for selecting corners which optimizes the distance between them
 
 show_segmented_plane: False  # Show segmentated plane in the image
 
 # Save data results
-save_path: "results"  # Path to save the results. The folder is created if it does not exist.
-results_file: "results"  # Name of the results file
 save_results: True  # Save results from calibration (rotation and translation) in a .csv file
+data_path: "corners/demo"  # Path to save pixel or corners values
+data_file: "corners_frontal"  # Name of the data file
+save_plots: True  # Save plots of corners
+plots_path: "corners/plots_frontal"  # Path to save plots of corners
+save_data: True  # Save corners data in a .csv file
+save_path: "results"  # Path to save the results. The folder is created if it does not exist.
+results_file: "demo_mean_frontal"  # Name of the results file
+
+outputs_file: "outputs"  # Name of the outputs file
 
 
 # Save point clouds with image coordinates [x, y, z, u, v] in .ply format after obtaining the results file
