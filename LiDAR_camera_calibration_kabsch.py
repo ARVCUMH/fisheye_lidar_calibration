@@ -26,13 +26,6 @@ def show_and_save_results(camera_corners3d, lidar_corners, image_corners, imgs, 
     # rotation = np.zeros(3)
     # # translation = np.array([0.1, -0.05, -0.16415])
     # translation = np.array([-0.08, 0, 0.16])
-            
-    #     indexes = kabsch_plot(kabsch_errors, kabsch_std, label='Kabsch error: click to repeat and press enter')
-    
-    # # Delete the selected indexes from bad results from the Kabsch algorithm
-    # delete_idx = kabsch_plot(kabsch_errors, kabsch_std, label='Kabsch error: click to delete and press enter')
-    # rotations = np.delete(rotations, delete_idx, axis=0)
-    # translations = np.delete(translations, delete_idx, axis=0)
     
     # Range in meters for the lidar points
     d_range = (0, 80)

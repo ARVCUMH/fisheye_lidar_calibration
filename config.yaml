@@ -44,7 +44,7 @@ show_segmented_plane: False  # Show segmentated plane in the image
 save_results: True  # Save results from calibration (rotation and translation) in a .csv file
 data_path: "corners/demo"  # Path to save pixel or corners values
 data_file: "corners_frontal"  # Name of the data file
-save_plots: True  # Save plots of corners
+save_plots: False  # Save plots of corners
 plots_path: "corners/plots_frontal"  # Path to save plots of corners
 save_data: True  # Save corners data in a .csv file
 save_path: "results"  # Path to save the results. The folder is created if it does not exist.
